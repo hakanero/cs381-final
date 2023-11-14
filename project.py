@@ -109,5 +109,3 @@ def unb_test():
 	alg.show_resources()
 
 alg_test()
-
-#hellooo
