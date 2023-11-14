@@ -18,6 +18,7 @@ class Resource:
 		self.name = name
 		self.utilizers = {}
 		self.utilization_rate = 0
+		self.remaining = 1
 
 	def utilize(self, agent_id, amount):
 		if agent_id in self.utilizers:
@@ -25,6 +26,7 @@ class Resource:
 		else:
 			self.utilizers[agent_id] = amount
 		self.utilization_rate = sum([self.utilizers[k] for k in self.utilizers])
+		self.remaining = 1-self.utilization_rate
 	
 	def visualize(self):
 		labels = [f"Agent {u}" for u in self.utilizers]
@@ -65,10 +67,11 @@ class Algorithm:
 		pyplot.show()
 
 class UNB(Algorithm):
+	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
 		self.groups = []
-	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
+	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		self.groups = [[] for _ in range(self.nor)]
@@ -82,10 +85,11 @@ class UNB(Algorithm):
 		pass
 
 class BAL(Algorithm):
+	'''BAL algorithm stands for BALanced. When groups are balanced, increase the share of the smallest in both groups'''
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
 		self.groups = []
-	'''BAL algorithm stands for BALanced. When groups are balanced, only increases the share of the agent with lowest share in the smallest groups.'''
+	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		self.groups = [[] for _ in range(self.nor)]
@@ -122,4 +126,4 @@ def unb_test():
 	alg.share_function()
 	alg.show_resources()
 
-alg_test()
+unb_test()
