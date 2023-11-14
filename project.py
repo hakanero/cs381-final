@@ -78,6 +78,8 @@ class UNB(Algorithm):
 			print(f"Group {self.resources[i]}:")
 			for k in self.groups[i]:
 				print(k)
+	def process(self):
+		pass
 
 class BAL(Algorithm):
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
