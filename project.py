@@ -65,15 +65,18 @@ class Algorithm:
 		pyplot.show()
 
 class UNB(Algorithm):
+	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
+		super().__init__(number_of_resources, number_of_agents)
+		self.groups = []
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
-		groups = [[] for _ in range(self.nor)]
+		self.groups = [[] for _ in range(self.nor)]
 		for r in range(self.n):
-			groups[self.agents[r].group_num].append(self.agents[r])
+			self.groups[self.agents[r].group_num].append(self.agents[r])
 		for i in range(self.nor):
 			print(f"Group {self.resources[i]}:")
-			for k in groups[i]:
+			for k in self.groups[i]:
 				print(k)
 
 class BAL(Algorithm):
