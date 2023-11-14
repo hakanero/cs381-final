@@ -80,7 +80,19 @@ class UNB(Algorithm):
 				print(k)
 
 class BAL(Algorithm):
-	pass
+	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
+		super().__init__(number_of_resources, number_of_agents)
+		self.groups = []
+	'''BAL algorithm stands for BALanced. When groups are balanced, only increases the share of the agent with lowest share in the smallest groups.'''
+	def share_function(self):
+		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
+		self.groups = [[] for _ in range(self.nor)]
+		for r in range(self.n):
+			self.groups[self.agents[r].group_num].append(self.agents[r])
+		for i in range(self.nor):
+			print(f"Group {self.resources[i]}:")
+			for k in self.groups[i]:
+				print(k)
 
 class BALStar(BAL):
 	pass
