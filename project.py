@@ -69,16 +69,6 @@ class Group:
 				current_agent = a
 		return current_agent
 
-	def second_smallest_agent(self) -> Agent:
-		smallest = self.smallest_agent()
-		current_min = 10000000.0 #arbitrarily large number
-		current_agent = None
-		for a in self.agents:
-			if a.get_demand(self.resource_num) < current_min and a != smallest:
-				current_min = a.get_demand(self.resource_num)
-				current_agent = a
-		return current_agent
-
 class Algorithm:
 	'''Algorithm class, represents the base of a resource allocation algorithm'''
 	nor : int #number_of_resources
