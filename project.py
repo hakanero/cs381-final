@@ -35,12 +35,12 @@ class Resource:
 		self.utilization_rate = sum([self.utilizers[k] for k in self.utilizers])
 		self.remaining = 1-self.utilization_rate
 	
-	def visualize(self):
+	def visualize(self, unique=False):
 		labels = [f"Agent {u}" for u in self.utilizers]
 		amounts = [round(self.utilizers[u]*100) for u in self.utilizers]
 		labels.append("Not Utilized")
 		amounts.append(round((1-self.utilization_rate)*100))
-		pyplot.figure(self.name)
+		pyplot.figure(self.name + "1" if unique else self.name)
 		pyplot.pie(amounts, labels=labels)
 	
 	def __str__(self):
@@ -112,10 +112,9 @@ class Algorithm:
 		for r in self.resources:
 			print(r)
 
-	def show_resources(self):
+	def show_resources(self, unique=False):
 		for r in self.resources:
-			r.visualize()
-		pyplot.show()
+			r.visualize(unique)
 
 class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
@@ -125,18 +124,14 @@ class UNB(Algorithm):
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		super().group_agents() #Group the agents based on their most demanded resource.
-
-		lowest_group = self.lowest_group()
-		smallest_agent = lowest_group.smallest_agent()
-		second_smallest = lowest_group.second_smallest_agent()
-
-		increase_amount = second_smallest.get_demand(lowest_group.resource_num)
-		increase_amount -= smallest_agent.get_demand(lowest_group.resource_num)
-
-		self.resources[lowest_group.resource_num].utilize(smallest_agent.id, increase_amount)
 		
 	def process(self):
-		pass
+		lowest_group = self.lowest_group()
+		smallest_agent = lowest_group.smallest_agent()
+
+		increase_amount = 0.1 # change this to second smallest - smallest
+
+		self.resources[lowest_group.resource_num].utilize(smallest_agent.id, increase_amount)
 
 class BAL(Algorithm):
 	'''BAL algorithm stands for BALanced. When groups are balanced, increase the share of the smallest in both groups'''
@@ -172,5 +167,8 @@ def unb_test():
 	alg.agents.append(Agent("C", 0.2,0.4))
 	alg.share_function()
 	alg.show_resources()
+	alg.process()
+	alg.show_resources(True)
+	pyplot.show()
 
 unb_test()
