@@ -45,6 +45,7 @@ class Algorithm:
 	n : int #number_of_agents
 	resources = []
 	agents = []
+	groups = []
 
 	def __init__(self, number_of_resources = 2, number_of_agents = 3) -> None:
 		self.nor = number_of_resources
@@ -56,6 +57,16 @@ class Algorithm:
 		for a in self.agents:
 			for j,d in enumerate(a.demand_vec):
 				self.resources[j].utilize(a.id,d/self.n)
+
+	def group_agents(self, verbose : bool = False):
+		self.groups = [[] for _ in range(self.nor)]
+		for r in range(self.n):
+			self.groups[self.agents[r].group_num].append(self.agents[r])
+		if verbose:
+			for i in range(self.nor):
+				print(f"Group {self.resources[i]}:")
+				for k in self.groups[i]:
+					print(k)
 
 	def print_res(self):
 		for r in self.resources:
@@ -70,17 +81,11 @@ class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
-		self.groups = []
 	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
-		self.groups = [[] for _ in range(self.nor)]
-		for r in range(self.n):
-			self.groups[self.agents[r].group_num].append(self.agents[r])
-		for i in range(self.nor):
-			print(f"Group {self.resources[i]}:")
-			for k in self.groups[i]:
-				print(k)
+		super().group_agents() #Group the agents based on their most demanded resource.
+		
 	def process(self):
 		pass
 
@@ -88,17 +93,10 @@ class BAL(Algorithm):
 	'''BAL algorithm stands for BALanced. When groups are balanced, increase the share of the smallest in both groups'''
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
-		self.groups = []
 	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
-		self.groups = [[] for _ in range(self.nor)]
-		for r in range(self.n):
-			self.groups[self.agents[r].group_num].append(self.agents[r])
-		for i in range(self.nor):
-			print(f"Group {self.resources[i]}:")
-			for k in self.groups[i]:
-				print(k)
+		super().group_agents() #Group the agents based on their most demanded resource.
 
 class BALStar(BAL):
 	pass
