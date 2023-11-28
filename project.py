@@ -9,6 +9,13 @@ class Agent:
 		'''Demand vector of agent'''
 		self.group_num = self.demand_vec.index(max(self.demand_vec))
 		'''Which group does this agent belong to? The group is which resource this agent desires the most'''
+	
+	def get_demand(self, resource_num):
+		return self.demand_vec[resource_num]
+
+	def lowest_demand(self):
+		return self.demand_vec[self.group_num]
+	
 	def __str__(self) -> str:
 		return self.id
 
@@ -39,6 +46,39 @@ class Resource:
 	def __str__(self):
 		return self.name
 
+class Group:
+	def __init__(self, resource_num) -> None:
+		self.resource_num = resource_num
+		self.agents = []
+	
+	def add_agent(self, agent: Agent):
+		self.agents.append(agent)
+
+	def total_value(self):
+		res = 0.0
+		for a in self.agents:
+			res += a.demand_vec[self.resource_num]
+		return res
+
+	def smallest_agent(self) -> Agent:
+		current_min = 10000000.0 #arbitrarily large number
+		current_agent = None
+		for a in self.agents:
+			if a.get_demand(self.resource_num) < current_min:
+				current_min = a.get_demand(self.resource_num)
+				current_agent = a
+		return current_agent
+
+	def second_smallest_agent(self) -> Agent:
+		smallest = self.smallest_agent()
+		current_min = 10000000.0 #arbitrarily large number
+		current_agent = None
+		for a in self.agents:
+			if a.get_demand(self.resource_num) < current_min and a != smallest:
+				current_min = a.get_demand(self.resource_num)
+				current_agent = a
+		return current_agent
+
 class Algorithm:
 	'''Algorithm class, represents the base of a resource allocation algorithm'''
 	nor : int #number_of_resources
@@ -59,14 +99,24 @@ class Algorithm:
 				self.resources[j].utilize(a.id,d/self.n)
 
 	def group_agents(self, verbose : bool = False):
-		self.groups = [[] for _ in range(self.nor)]
-		for r in range(self.n):
-			self.groups[self.agents[r].group_num].append(self.agents[r])
+		self.groups = [Group(i) for i in range(self.nor)]
+		for a in range(self.n):
+			self.groups[self.agents[a].group_num].add_agent(self.agents[a])
 		if verbose:
 			for i in range(self.nor):
 				print(f"Group {self.resources[i]}:")
 				for k in self.groups[i]:
 					print(k)
+	
+	def lowest_group(self):
+		current_group = None
+		current_min_value = 1000000000.0 #arbitrarily large number
+		for i in range(self.nor):
+			g = self.groups[i]
+			if g.total_value() < current_min_value:
+				current_min_value = g.total_value()
+				current_group = g
+		return current_group
 
 	def print_res(self):
 		for r in self.resources:
@@ -85,6 +135,15 @@ class UNB(Algorithm):
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		super().group_agents() #Group the agents based on their most demanded resource.
+
+		lowest_group = self.lowest_group()
+		smallest_agent = lowest_group.smallest_agent()
+		second_smallest = lowest_group.second_smallest_agent()
+
+		increase_amount = second_smallest.get_demand(lowest_group.resource_num)
+		increase_amount -= smallest_agent.get_demand(lowest_group.resource_num)
+
+		self.resources[lowest_group.resource_num].utilize(smallest_agent.id, increase_amount)
 		
 	def process(self):
 		pass
