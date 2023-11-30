@@ -23,7 +23,7 @@ class Resource:
 	'''Resource class, represents the resources we share among agents. '''
 	def __init__(self, name = "Resource") -> None:
 		self.name = name
-		self.utilizers = {}
+		self.utilizers = {} #key is agent value is amount of resource given
 		self.utilization_rate = 0
 		self.remaining = 1
 
@@ -121,66 +121,50 @@ class UNB(Algorithm):
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
 
-		self.groups = [] #number of groups (default should be 2)
-		self.lesser = 0 #which group is the lesser one (0 for group 1, 1 for group 2)
+		self.lesser = self.lowest_group() #which group is the lesser one (0 for group 1, 1 for group 2)
 		self.smallestFrac = float("inf") #the smallest fraction of a resource given to an agent
-		self.smallestAgents = [] #the group of agents with the smallest resource fraction
 
 	def share_function(self):
-		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
+		super().share_function() #Give everyone 1/n of their demand to satisfy SI.
 		self.groups = [[] for _ in range(self.nor)]
 		for r in range(self.n):
 			self.groups[self.agents[r].group_num].append(self.agents[r])
+			#IMPORTNAT IMPORTANT IMPORTANT IMPORTANT need to subtract from total resource
 		for i in range(self.nor):
 			print(f"Group {self.resources[i]}:")
 			for k in self.groups[i]:
 				print(k)
 
-	#UNB algorithim when 
-	def step2group1(self):
-		#find the smallest group
-		minIndex = float("inf")
-		for i in range(len(self.groups)):
-			if len(self.groups[i]) < minIndex:
-				minIndex = i
-		#find the smallest fraction demand of the other resource 
-		self.lesser = minIndex
-		if self.lesser == 0:
-			give = 1 #
-		else:
-			give = 0
-
-		#finds the smallest fraction of resource
-		self.smallestFrac = min(self.groups[self.lesser].demand[give])
-
-		#makes sure we get all agents with the smallest fraction
-		for i in range(len(self.groups[minIndex])):
-			if self.groups[minIndex][i].demand[minIndex] == self.smallestFrac:
-				self.smallestAgents.append(self.groups[minIndex][i])
-
-
+	#UNB algorithim when group 1 is lesser
+	def step2group1(self, smallest):
+		
 		while self.resources[0] > 0 and self.resources[1] > 0:
 			
-			#find the agents with the smallest fraction share here
-			for agent in self.groups[]
+			#find the agents with the smallest fraction share here and add it to p
 			p = []
+			for agent in self.lesser.agents:
+				break
 
 
-			#calculate the rate
+			#calculate the rates
 			s0 = 
-			s1 = 
-			s2 = 
+			s1 = self.resources[0].remaining / len(p) 
+			#denominator for s2
+			s2_denom = 0
+			for j in p:
+				
+			s2 = self.resources[1].remaining / 
 			s = min(s0,s1,s2)
 
-			for agent in self.smallestAgents:
+			for agent in p:
 				#increase agents share by some rate
 				self.resources[give].utilizers[agent] += s
 				#decrement overall resource by the rate 
 				self.resources[give].remaining -= s
 		
-		#the UNB algorithim when group 2 is lesser
-		def step2group2():
-
+	#the UNB algorithim when group 2 is lesser
+	def step2group2():
+		pass
 	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
