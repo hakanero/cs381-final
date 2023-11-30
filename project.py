@@ -70,8 +70,11 @@ class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
-		self.groups = []
-	
+		self.groups = [] #number of groups (default should be 2)
+		self.lesser = 0 #which group is the lesser one (0 for group 1, 1 for group 2)
+		self.smallestFrac = float("inf") #the smallest fraction of a resource given to an agent
+		self.smallestAgents = [] #the group of agents with the smallest resource fraction
+
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		self.groups = [[] for _ in range(self.nor)]
@@ -81,8 +84,52 @@ class UNB(Algorithm):
 			print(f"Group {self.resources[i]}:")
 			for k in self.groups[i]:
 				print(k)
-	def process(self):
-		pass
+
+	#UNB algorithim when 
+	def step2group1(self):
+		#find the smallest group
+		minIndex = float("inf")
+		for i in range(len(self.groups)):
+			if len(self.groups[i]) < minIndex:
+				minIndex = i
+		#find the smallest fraction demand of the other resource 
+		self.lesser = minIndex
+		if self.lesser == 0:
+			give = 1 #
+		else:
+			give = 0
+
+		#finds the smallest fraction of resource
+		self.smallestFrac = min(self.groups[self.lesser].demand[give])
+
+		#makes sure we get all agents with the smallest fraction
+		for i in range(len(self.groups[minIndex])):
+			if self.groups[minIndex][i].demand[minIndex] == self.smallestFrac:
+				self.smallestAgents.append(self.groups[minIndex][i])
+
+
+		while self.resources[0] > 0 and self.resources[1] > 0:
+			
+			#find the agents with the smallest fraction share here
+			for agent in self.groups[]
+			p = []
+
+
+			#calculate the rate
+			s0 = 
+			s1 = 
+			s2 = 
+			s = min(s0,s1,s2)
+
+			for agent in self.smallestAgents:
+				#increase agents share by some rate
+				self.resources[give].utilizers[agent] += s
+				#decrement overall resource by the rate 
+				self.resources[give].remaining -= s
+		
+		#the UNB algorithim when group 2 is lesser
+		def step2group2():
+
 
 class BAL(Algorithm):
 	'''BAL algorithm stands for BALanced. When groups are balanced, increase the share of the smallest in both groups'''
@@ -99,9 +146,33 @@ class BAL(Algorithm):
 			print(f"Group {self.resources[i]}:")
 			for k in self.groups[i]:
 				print(k)
+	
+	def calcStep():
+		return 
+
+	def step2():
+		return
 
 class BALStar(BAL):
-	pass
+	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
+		super().__init__(number_of_resources, number_of_agents)
+		self.groups = []
+	
+	def share_function(self):
+		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
+		self.groups = [[] for _ in range(self.nor)]
+		for r in range(self.n):
+			self.groups[self.agents[r].group_num].append(self.agents[r])
+		for i in range(self.nor):
+			print(f"Group {self.resources[i]}:")
+			for k in self.groups[i]:
+				print(k)
+	
+	def calcStep():
+		return 
+
+	def step2():
+		return
 
 
 #TESTS BELOW
