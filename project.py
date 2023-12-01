@@ -323,20 +323,77 @@ class BALStar(BAL):
 			for k in self.groups[i]:
 				print(k)
 	
-	def calcStep():
-		return 
+	def step2(self):
+		#smallest agents of resource 2 in group 1
+		p1 = self.groups[0].smallest_agents_of_resource(1)
+		#smallest agents of resource 1 in group 2
+		p2 = self.groups[1].smallest_agents_of_resource(0)
+		#get s1,s2 calcStep is on page 13
+		s1,s2 = self.calcStep()
 
-	def step2():
-		return
+		#add things to every agent in p1
+		for agent in p1:
+			#scalar we add to allocation and subtract from remaining resources
+			val = s1/agent.demand_vec[1]
+			self.resources[1].utilize(agent, val*agent.get_demand(1))
+			self.resources[0].utilize(agent, val*agent.get_demand(0))
+		#add things to every agent in p2
+		for agent in p2:
+			#scalar we add to allocation and subtract from remaining resources
+			val = s2/agent.demand_vec[0]
+			self.resources[1].utilize(agent, val*agent.get_demand(1))
+			self.resources[0].utilize(agent, val*agent.get_demand(0))
+		
+	def calcStep(self,p1,p2):
+		s1,s2 = 0,0
+		d1,d2 = 0,0
+		r1,r2 = self.resources[0].remaining + (1/len(self.agents)*p1[0].get_demand(0)), self.resources[1].remaining + (1/len(self.agents)*p2[0].get_demand(1))
+		#calculate s1 and s2
+		
+		p1_sub = [a for a in self.agents if a not in p1]
+
+		minAgentVal = float("inf") #smallest agent outside of P1
+		for agent in p1_sub:
+			if self.resources[1].get_utilization(agent) < minAgentVal:
+				minAgentVal = self.resources[1].get_utilization(agent)
+
+		s1a = minAgentVal - p1[0].get_demand(1) 
+		
+		for agent in p1:
+			d1 += (1/agent.demand_vec[1])
+		
+		s1b = self.resources[1] / (len(p1) + (d1*(r2/r1)))
+
+		s1 = min(s1a,s1b)
+		
+		#calculate s2
+		p2_sub = [a for a in self.agents if a not in p2]
+
+		minAgentVal = float("inf") #smallest agent outside of P1
+		for agent in p2_sub:
+			if self.resources[1].get_utilization(agent) < minAgentVal:
+				minAgentVal = self.resources[0].get_utilization(agent)
+
+		s2a = minAgentVal - p2[0].get_demand(0) 
+		
+		for agent in p2:
+			d2 += (1/agent.demand_vec[0])
+		
+		s2b = self.resources[0] / (len(p2) + (d2*(r1/r2)))
+
+		s2 = min(s2a,s2b)
+
+		#adjusts s1 and s2
+		if (s1*d1)/(s2*d2) <= r1/r2:
+			s2 = s1 * (d1/d2) * (r2/r1)
+		else:
+			s1 = s2 * (d2/d1) * (r1/r2)
+
+		return (s1,s2)
 	
 	def process(self):
 		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
-			#if group1 bigger
-			if self.groups[0].length() > self.groups[1].length():
-				self.step2group1()
-			else:
-				self.step2group2()
-
+			self.step2()
 
 #TESTS BELOW
 
