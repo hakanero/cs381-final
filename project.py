@@ -36,12 +36,12 @@ class Resource:
 		self.utilization_rate = sum([self.utilizers[k] for k in self.utilizers])
 		self.remaining = 1.0-self.utilization_rate
 	
-	def visualize(self, unique=False):
+	def visualize(self, fig_name=""):
 		labels = [f"Agent {u}" for u in self.utilizers]
 		amounts = [round(self.utilizers[u]*100) for u in self.utilizers]
 		labels.append("Not Utilized")
 		amounts.append(round((1-self.utilization_rate)*100))
-		pyplot.figure(self.name + "1" if unique else self.name)
+		pyplot.figure(f"{self.name} {fig_name}")
 		pyplot.pie(amounts, labels=labels)
 	
 	def get_utilization(self, agent):
@@ -133,21 +133,18 @@ class Algorithm:
 		for r in self.resources:
 			print(r)
 
-	def show_resources(self, unique=False):
+	def show_resources(self, name = ""):
 		for r in self.resources:
-			r.visualize(unique)
+			r.visualize(name)
 
 class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
-	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
-		super().__init__(number_of_resources, number_of_agents)
-
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy SI.
 		super().group_agents() #Group agents
 		#self.lesser = self.lowest_group() #which group is the lesser one (0 for group 1, 1 for group 2)
 
-	#UNB algorithim when group 1 is bigger
+	#UNB algorithm when group 1 is bigger
 	def step2group1(self):
 		'''when group 1 is bigger we look at group 2 and give resource 1 to the smallest agents of group 2'''
 		#find the agents with the smallest fraction share of resource 1 in group 2
@@ -195,7 +192,7 @@ class UNB(Algorithm):
 		for agent in n_subP:
 			if self.resources[1].get_utilization(agent) < minAgentVal:
 				minAgentVal = self.resources[1].get_utilization(agent)
-		s0 = minAgentVal + self.resources[1].get_utilization(P[0])
+		s0 = minAgentVal - self.resources[1].get_utilization(P[0])
 		s1 = self.resources[1].remaining / len(P) 
 		#denominator for s2
 		s2_denom = 0
@@ -218,7 +215,7 @@ class UNB(Algorithm):
 	def process(self):
 		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
 			#if group1 bigger
-			if self.groups[0].length() > self.groups[1].length():
+			if self.groups[0].total_value() > self.groups[1].total_value():
 				self.step2group1()
 			else:
 				self.step2group2()
@@ -315,13 +312,7 @@ class BALStar(BAL):
 	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
-		self.groups = [[] for _ in range(self.nor)]
-		for r in range(self.n):
-			self.groups[self.agents[r].group_num].append(self.agents[r])
-		for i in range(self.nor):
-			print(f"Group {self.resources[i]}:")
-			for k in self.groups[i]:
-				print(k)
+		super().group_agents()
 	
 	def calcStep():
 		return 
@@ -357,8 +348,10 @@ def unb_test():
 	alg.agents.append(Agent("A", 0.2,0.3))
 	alg.agents.append(Agent("B", 0.4,0.1))
 	alg.agents.append(Agent("C", 0.4,0.2))
+	alg.agents.append(Agent("D", 0.1,0.1))
+	alg.agents.append(Agent("E", 1.0,1.0))
 	alg.share_function()
-	alg.show_resources()
+	alg.show_resources("initial")
 	for r in alg.resources:
 		for i in r.utilizers:
 			print("resource",r,"agent",i,r.utilizers[i])
@@ -366,7 +359,7 @@ def unb_test():
 	for r in alg.resources:
 		for i in r.utilizers:
 			print("resource",r,"agent",i,r.utilizers[i])
-	alg.show_resources(True)
+	alg.show_resources("after UNB")
 	pyplot.show()
 
 unb_test()
