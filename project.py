@@ -120,20 +120,13 @@ class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
-
+		self.share_function()
 		self.lesser = self.lowest_group() #which group is the lesser one (0 for group 1, 1 for group 2)
 		self.smallestFrac = float("inf") #the smallest fraction of a resource given to an agent
 
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy SI.
-		self.groups = [[] for _ in range(self.nor)]
-		for r in range(self.n):
-			self.groups[self.agents[r].group_num].append(self.agents[r])
-			#IMPORTNAT IMPORTANT IMPORTANT IMPORTANT need to subtract from total resource
-		for i in range(self.nor):
-			print(f"Group {self.resources[i]}:")
-			for k in self.groups[i]:
-				print(k)
+		super().group_agents() #Group agents 
 
 	#UNB algorithim when group 1 is bigger
 	def step2group1(self):
