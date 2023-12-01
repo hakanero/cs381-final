@@ -2,7 +2,7 @@ from matplotlib import pyplot
 
 class Agent:
 	'''Agent class, represents each one of the players that want a certain amount of each resource'''
-	def __init__(self, id, demands) -> None:
+	def __init__(self, id, *demands) -> None:
 		self.id = id 
 		'''ID to identify the agents'''
 		self.demand_vec = demands
