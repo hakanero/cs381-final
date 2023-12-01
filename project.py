@@ -258,18 +258,40 @@ class BAL(Algorithm):
 		s1,s2 = 0,0
 		d1,d2 = 0,0
 		r1,r2 = self.resources[0].remaining, self.resources[1].remaining
-		#calculate s1 
+		#calculate s1 and s2
 		
-		s1a = None
+		p1_sub = [a for a in self.agents if a not in p1]
+
+		minAgentVal = float("inf") #smallest agent outside of P1
+		for agent in p1_sub:
+			if self.resources[1].get_utilization(agent) < minAgentVal:
+				minAgentVal = self.resources[1].get_utilization(agent)
+
+		s1a = minAgentVal - p1[0].get_demand(1) 
 		
 		for agent in p1:
 			d1 += (1/agent.demand_vec[1])
-
-		s1b = None
+		
+		s1b = self.resources[1] / (len(p1) + (d1*(r2/r1)))
 
 		s1 = min(s1a,s1b)
-		#calculate s2
 		
+		#calculate s2
+		p2_sub = [a for a in self.agents if a not in p2]
+
+		minAgentVal = float("inf") #smallest agent outside of P1
+		for agent in p2_sub:
+			if self.resources[1].get_utilization(agent) < minAgentVal:
+				minAgentVal = self.resources[0].get_utilization(agent)
+
+		s2a = minAgentVal - p2[0].get_demand(0) 
+		
+		for agent in p2:
+			d2 += (1/agent.demand_vec[0])
+		
+		s2b = self.resources[0] / (len(p2) + (d2*(r1/r2)))
+
+		s2 = min(s2a,s2b)
 
 		#adjusts s1 and s2
 		if (s1*d1)/(s2*d2) <= r1/r2:
@@ -278,6 +300,7 @@ class BAL(Algorithm):
 			s1 = s2 * (d2/d1) * (r1/r2)
 
 		return (s1,s2)
+	
 	def process(self):
 		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
 			self.step2()
