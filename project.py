@@ -2,10 +2,10 @@ from matplotlib import pyplot
 
 class Agent:
 	'''Agent class, represents each one of the players that want a certain amount of each resource'''
-	def __init__(self, id, *demands) -> None:
+	def __init__(self, id, demands) -> None:
 		self.id = id 
 		'''ID to identify the agents'''
-		self.demand_vec = (demands)
+		self.demand_vec = demands
 		'''Demand vector of agent'''
 		self.group_num = self.demand_vec.index(max(self.demand_vec))
 		'''Which group does this agent belong to? The group is which resource this agent desires the most'''
@@ -15,6 +15,11 @@ class Agent:
 
 	def lowest_demand(self):
 		return self.demand_vec[self.group_num]
+	
+	def normalize(self):
+		noramlizer = max(self.demand_vec)
+		for d in self.demand_vec:
+			d = d/noramlizer
 	
 	def __str__(self) -> str:
 		return self.id
