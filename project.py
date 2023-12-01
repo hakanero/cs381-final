@@ -34,7 +34,7 @@ class Resource:
 		else:
 			self.utilizers[agent_id] = amount
 		self.utilization_rate = sum([self.utilizers[k] for k in self.utilizers])
-		self.remaining = 1-self.utilization_rate
+		self.remaining = 1.0-self.utilization_rate
 	
 	def visualize(self, unique=False):
 		labels = [f"Agent {u}" for u in self.utilizers]
@@ -172,7 +172,8 @@ class UNB(Algorithm):
 		for agent in n_subP:
 			if self.resources[0].get_utilization(agent) < minAgentVal:
 				minAgentVal = self.resources[0].get_utilization(agent)
-		s0 = minAgentVal - self.resources[0].get_utilization(P[0])
+		print(minAgentVal)
+		s0 = minAgentVal + self.resources[0].get_utilization(P[0])
 		s1 = self.resources[0].remaining / len(P) 
 		#denominator for s2
 		s2_denom = 0
@@ -212,7 +213,7 @@ class UNB(Algorithm):
 		for agent in n_subP:
 			if self.resources[1].get_utilization(agent) < minAgentVal:
 				minAgentVal = self.resources[1].get_utilization(agent)
-		s0 = minAgentVal - self.resources[1].get_utilization(P[0])
+		s0 = minAgentVal + self.resources[1].get_utilization(P[0])
 		s1 = self.resources[1].remaining / len(P) 
 		#denominator for s2
 		s2_denom = 0
@@ -234,7 +235,7 @@ class UNB(Algorithm):
 		super().group_agents() #Group the agents based on their most demanded resource.
 		
 	def process(self):
-		for i in range(10):#while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
 			#if group1 bigger
 			if self.groups[0].length() > self.groups[1].length():
 				self.step2group1()
