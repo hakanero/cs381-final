@@ -302,9 +302,6 @@ class BAL(Algorithm):
 		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
 			self.step2()
 	
-	
-
-
 class BALStar(BAL):
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
