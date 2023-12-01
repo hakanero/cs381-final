@@ -156,15 +156,6 @@ class UNB(Algorithm):
 		P = lesser.smallest_agents_of_resource(1)
 		for a in P:
 			print(a)
-		
-		#self.smallestFrac = self.lesser.utilizers[smallestAgent]
-		#p = []
-		#for agent in self.lesser.agents:
-		#	if self.resources[0].utilizers[agent] == self.smallestFrac:
-		#		p.append(agent)
-		
-		#calculate the rates
-		
 		#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
 		n_subP = [a for a in self.agents if a not in P]
 	
@@ -197,15 +188,6 @@ class UNB(Algorithm):
 		P = lesser.smallest_agents_of_resource(0)
 		for a in P:
 			print(a)
-		
-		#self.smallestFrac = self.lesser.utilizers[smallestAgent]
-		#p = []
-		#for agent in self.lesser.agents:
-		#	if self.resources[0].utilizers[agent] == self.smallestFrac:
-		#		p.append(agent)
-		
-		#calculate the rates
-		
 		#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
 		n_subP = [a for a in self.agents if a not in P]
 		
@@ -229,7 +211,6 @@ class UNB(Algorithm):
 			self.resources[0].utilize(agent, s/agent.get_demand(1))
 		return self.agents
 		
-	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		super().group_agents() #Group the agents based on their most demanded resource.
@@ -250,52 +231,9 @@ class BAL(Algorithm):
 	
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
+		super().group_agents()
+	def process(self):
 
-		self.groups = [[] for _ in range(self.nor)]
-		for r in range(self.n):
-			self.groups[self.agents[r].group_num].append(self.agents[r])
-		for i in range(self.nor):
-			print(f"Group {self.resources[i]}:")
-			for k in self.groups[i]:
-				print(k)
-
-	def calcStep():
-		return 
-
-	def step2(self):
-
-		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0:
-			
-			#find the agents with the smallest fraction share of resource 1 in group 2
-			p1,p2 = [],[]
-			#need to find new smallest agent each iteration
-			smallestAgent = self.lesser.smallest_agent()
-			self.smallestFrac = self.lesser.utilizers[smallestAgent]
-			p = []
-			for agent in self.lesser.agents:
-				if self.resources[0].utilizers[agent] == self.smallestFrac:
-					p.append(agent)
-				
-			#calculate the rates
-			
-			
-			s1,s2 = self.calcStep()
-			for k in [0,1]:
-				if k == 0:
-					for agent in p1:
-						self.resource[0]
-						self.resource[1]
-
-			for agent in p:
-				#increase agents share by some rate
-				self.resources[give].utilizers[agent] += s
-				#decrement overall resource by the rate 
-				self.resources[0].remaining -= s
-				self.resources[1].remaining -= (s/self.resources[0].utilizers[agent])
-			
-		return self.agents
-
-		super().group_agents() #Group the agents based on their most demanded resource.
 
 
 class BALStar(BAL):
@@ -318,6 +256,14 @@ class BALStar(BAL):
 
 	def step2():
 		return
+	
+	def process(self):
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
+			#if group1 bigger
+			if self.groups[0].length() > self.groups[1].length():
+				self.step2group1()
+			else:
+				self.step2group2()
 
 
 #TESTS BELOW
