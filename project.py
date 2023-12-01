@@ -238,6 +238,7 @@ class BAL(Algorithm):
 		p1 = self.groups[0].smallest_agents_of_resource(1)
 		#smallest agents of resource 1 in group 2
 		p2 = self.groups[1].smallest_agents_of_resource(0)
+		#get s1,s2 calcStep is on page 13
 		s1,s2 = self.calcStep()
 
 		#add things to every agent in p1
@@ -253,14 +254,24 @@ class BAL(Algorithm):
 			self.resources[1].utilize(agent, val*agent.get_demand(1))
 			self.resources[0].utilize(agent, val*agent.get_demand(0))
 		
-	def calcStep(self):
+	def calcStep(self,p1,p2):
 		s1,s2 = 0,0
 		d1,d2 = 0,0
 		r1,r2 = self.resources[0].remaining, self.resources[1].remaining
-		#calculate s1 and s2
+		#calculate s1 
+		
+		s1a = None
+		
+		for agent in p1:
+			d1 += (1/agent.demand_vec[1])
+
+		s1b = None
+
+		s1 = min(s1a,s1b)
+		#calculate s2
 		
 
-		#choose s1,s2
+		#adjusts s1 and s2
 		if (s1*d1)/(s2*d2) <= r1/r2:
 			s2 = s1 * (d1/d2) * (r2/r1)
 		else:
