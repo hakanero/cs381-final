@@ -135,34 +135,54 @@ class UNB(Algorithm):
 			for k in self.groups[i]:
 				print(k)
 
-	#UNB algorithim when group 1 is lesser
-	def step2group1(self, smallest):
-		
-		while self.resources[0] > 0 and self.resources[1] > 0:
+	#UNB algorithim when group 1 is bigger
+	def step2group1(self):
+		'''when group 1 is bigger we look at group 2 and give resource 1 to the smallest agents of group 2'''
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0:
 			
-			#find the agents with the smallest fraction share here and add it to p
+			#find the agents with the smallest fraction share of resource 1 in group 2
+			
+			#need to find new smallest agent each iteration
+			smallestAgent = self.lesser.smallest_agent()
+			self.smallestFrac = self.lesser.utilizers[smallestAgent]
 			p = []
 			for agent in self.lesser.agents:
-				break
-
-
+				if self.resources[0].utilizers[agent] == self.smallestFrac:
+					p.append(agent)
+				
 			#calculate the rates
-			s0 = 
+			
+			#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
+			n_subP = []
+			for agent in self.agents:
+				if agent in p:
+					continue
+				else:
+					n_subP.append(agent)
+			minAgent = float("inf") #smallest agent outside of P
+			for agent in n_subP:
+				if self.resources[0].utilizers[agent] < minAgent:
+					minAgent = agent 
+			s0 = self.resources[0].utilizers[agent] - self.smallestFrac
 			s1 = self.resources[0].remaining / len(p) 
 			#denominator for s2
 			s2_denom = 0
 			for j in p:
-				
-			s2 = self.resources[1].remaining / 
+				cur = 1 / j.demand_vec[0]
+				s2_denom += cur
+			s2 = self.resources[1].remaining / s2_denom
 			s = min(s0,s1,s2)
 
 			for agent in p:
 				#increase agents share by some rate
 				self.resources[give].utilizers[agent] += s
 				#decrement overall resource by the rate 
-				self.resources[give].remaining -= s
-		
-	#the UNB algorithim when group 2 is lesser
+				self.resources[0].remaining -= s
+				self.resources[1].remaining -= (s/self.resources[0].utilizers[agent])
+			
+		return self.agents
+	
+	#the UNB algorithim when group 2 is bigger basically the same method as above but switch the numbers 
 	def step2group2():
 		pass
 	
@@ -194,12 +214,42 @@ class BAL(Algorithm):
 			print(f"Group {self.resources[i]}:")
 			for k in self.groups[i]:
 				print(k)
-	
+
 	def calcStep():
 		return 
 
-	def step2():
-		return
+	def step2(self):
+
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0:
+			
+			#find the agents with the smallest fraction share of resource 1 in group 2
+			p1,p2 = [],[]
+			#need to find new smallest agent each iteration
+			smallestAgent = self.lesser.smallest_agent()
+			self.smallestFrac = self.lesser.utilizers[smallestAgent]
+			p = []
+			for agent in self.lesser.agents:
+				if self.resources[0].utilizers[agent] == self.smallestFrac:
+					p.append(agent)
+				
+			#calculate the rates
+			
+			
+			s1,s2 = self.calcStep()
+			for k in [0,1]:
+				if k == 0:
+					for agent in p1:
+						self.resource[0]
+						self.resource[1]
+
+			for agent in p:
+				#increase agents share by some rate
+				self.resources[give].utilizers[agent] += s
+				#decrement overall resource by the rate 
+				self.resources[0].remaining -= s
+				self.resources[1].remaining -= (s/self.resources[0].utilizers[agent])
+			
+		return self.agents
 
 		super().group_agents() #Group the agents based on their most demanded resource.
 
