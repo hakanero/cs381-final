@@ -60,14 +60,18 @@ class Group:
 			res += a.demand_vec[self.resource_num]
 		return res
 
-	def smallest_agent(self) -> Agent:
+	def smallest_agents_of_resource(self, resource_num) -> list:
 		current_min = 10000000.0 #arbitrarily large number
-		current_agent = None
+		current_agents = []
+		smallest = None
 		for a in self.agents:
-			if a.get_demand(self.resource_num) < current_min:
-				current_min = a.get_demand(self.resource_num)
-				current_agent = a
-		return current_agent
+			if a.get_demand(resource_num) < current_min:
+				current_min = a.get_demand(resource_num)
+				smallest = a
+		for a in self.agents:
+			if a.get_demand(resource_num) == smallest.get_demand(resource_num):
+				current_agents.append(a)
+		return current_agents
 
 class Algorithm:
 	'''Algorithm class, represents the base of a resource allocation algorithm'''
@@ -121,12 +125,12 @@ class UNB(Algorithm):
 	def __init__(self, number_of_resources=2, number_of_agents=3) -> None:
 		super().__init__(number_of_resources, number_of_agents)
 		self.share_function()
-		self.lesser = self.lowest_group() #which group is the lesser one (0 for group 1, 1 for group 2)
-		self.smallestFrac = float("inf") #the smallest fraction of a resource given to an agent
 
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy SI.
-		super().group_agents() #Group agents 
+		super().group_agents() #Group agents
+		self.lesser = self.lowest_group() #which group is the lesser one (0 for group 1, 1 for group 2)
+		self.smallestFrac = float("inf") #the smallest fraction of a resource given to an agent 
 
 	#UNB algorithim when group 1 is bigger
 	def step2group1(self):
@@ -136,13 +140,14 @@ class UNB(Algorithm):
 			#find the agents with the smallest fraction share of resource 1 in group 2
 			
 			#need to find new smallest agent each iteration
-			smallestAgent = self.lesser.smallest_agent()
+			P = self.lesser.smallest_agents_of_resource(1)
+			
 			self.smallestFrac = self.lesser.utilizers[smallestAgent]
 			p = []
 			for agent in self.lesser.agents:
 				if self.resources[0].utilizers[agent] == self.smallestFrac:
 					p.append(agent)
-				
+			
 			#calculate the rates
 			
 			#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
