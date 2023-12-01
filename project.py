@@ -232,8 +232,46 @@ class BAL(Algorithm):
 	def share_function(self):
 		super().share_function() #Give everyone 1/n of their demand to satisfy EF.
 		super().group_agents()
-	def process(self):
+	
+	def step2(self):
+		#smallest agents of resource 2 in group 1
+		p1 = self.groups[0].smallest_agents_of_resource(1)
+		#smallest agents of resource 1 in group 2
+		p2 = self.groups[1].smallest_agents_of_resource(0)
+		s1,s2 = self.calcStep()
 
+		#add things to every agent in p1
+		for agent in p1:
+			#scalar we add to allocation and subtract from remaining resources
+			val = s1/agent.demand_vec[1]
+			self.resources[1].utilize(agent, val*agent.get_demand(1))
+			self.resources[0].utilize(agent, val*agent.get_demand(0))
+		#add things to every agent in p2
+		for agent in p2:
+			#scalar we add to allocation and subtract from remaining resources
+			val = s2/agent.demand_vec[0]
+			self.resources[1].utilize(agent, val*agent.get_demand(1))
+			self.resources[0].utilize(agent, val*agent.get_demand(0))
+		
+	def calcStep(self):
+		s1,s2 = 0,0
+		d1,d2 = 0,0
+		r1,r2 = self.resources[0].remaining, self.resources[1].remaining
+		#calculate s1 and s2
+		
+
+		#choose s1,s2
+		if (s1*d1)/(s2*d2) <= r1/r2:
+			s2 = s1 * (d1/d2) * (r2/r1)
+		else:
+			s1 = s2 * (d2/d1) * (r1/r2)
+
+		return (s1,s2)
+	def process(self):
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
+			self.step2()
+	
+	
 
 
 class BALStar(BAL):
