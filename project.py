@@ -421,4 +421,15 @@ def unb_test():
 	alg.show_resources("after UNB")
 	pyplot.show()
 
+def bal_test():
+	pass
+
+"""
+We are just observing lol
+Who performs better under what values
+How well the algorithms perform on making the smallest agent happy
+Who got the least utility from the resource -> social utility
+"""
+
+
 unb_test()
