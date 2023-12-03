@@ -422,7 +422,46 @@ def unb_test():
 	pyplot.show()
 
 def bal_test():
-	pass
+	alg = BAL()
+	alg.resources.append(Resource("CPU"))
+	alg.resources.append(Resource("Memory"))
+	alg.agents.append(Agent("A", 0.2,0.3))
+	alg.agents.append(Agent("B", 0.4,0.1))
+	alg.agents.append(Agent("C", 0.4,0.2))
+	alg.agents.append(Agent("D", 0.1,0.1))
+	alg.agents.append(Agent("E", 1.0,1.0))
+	alg.share_function()
+	alg.show_resources("initial")
+	for r in alg.resources:
+		for i in r.utilizers:
+			print("resource",r,"agent",i,r.utilizers[i])
+	alg.process()
+	for r in alg.resources:
+		for i in r.utilizers:
+			print("resource",r,"agent",i,r.utilizers[i])
+	alg.show_resources("after UNB")
+	pyplot.show()
+
+def bal_test():
+	alg = BALStar()
+	alg.resources.append(Resource("CPU"))
+	alg.resources.append(Resource("Memory"))
+	alg.agents.append(Agent("A", 0.2,0.3))
+	alg.agents.append(Agent("B", 0.4,0.1))
+	alg.agents.append(Agent("C", 0.4,0.2))
+	alg.agents.append(Agent("D", 0.1,0.1))
+	alg.agents.append(Agent("E", 1.0,1.0))
+	alg.share_function()
+	alg.show_resources("initial")
+	for r in alg.resources:
+		for i in r.utilizers:
+			print("resource",r,"agent",i,r.utilizers[i])
+	alg.process()
+	for r in alg.resources:
+		for i in r.utilizers:
+			print("resource",r,"agent",i,r.utilizers[i])
+	alg.show_resources("after UNB")
+	pyplot.show()
 
 """
 We are just observing lol
