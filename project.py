@@ -132,7 +132,6 @@ class UNB(Algorithm):
 		'''when group 1 is bigger we look at group 2 and give resource 1 to the smallest agents of group 2'''
 		#need to find new smallest agent each iteration
 		P = self.get_P(self.g2, 0)
-		
 		#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
 		n_subP = [a for a in self.agents if a not in P]
 	
@@ -311,12 +310,13 @@ def randomize_unb():
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	for i in range(no_of_agents):
-		alg.add_agent(Agent(f"{i}", rd.random(), rd.random()))
+		alg.add_agent(Agent(f"{i}", rd.randint(1,100)*1.0/100, rd.randint(1,100)*1.0/100))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
-	print("alpha is",alpha)
+	
 	alg.process()
 	util = alg.calculate_utility()
+	print("alpha is",alpha,"utility is",util)
 	return alpha, util
 
 """
