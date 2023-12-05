@@ -127,72 +127,76 @@ class Algorithm:
 
 class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
-	def step2(self):
+	def step2(self, res1, res2):
 		'''when group 1 is bigger we look at group 2 and give resource 1 to the smallest agents of group 2'''
 		#need to find new smallest agent each iteration
-		P = self.get_P(self.g2, 0)
+		P = self.get_P(self.g2, res1)
 		#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
 		n_subP = [a for a in self.agents if a not in P]
 	
 		minAgentVal = float("inf") #smallest agent outside of P
 		for agent in n_subP:
-			if self.resources[0].get_utilization(agent) < minAgentVal:
-				minAgentVal = self.resources[0].get_utilization(agent)
+			if self.resources[res1].get_utilization(agent) < minAgentVal:
+				minAgentVal = self.resources[res1].get_utilization(agent)
 		
-		s0 = minAgentVal - 0 if len(P) == 0 else self.resources[0].get_utilization(P[0])
-		s1 = float("inf") if len(P) == 0 else self.resources[0].remaining / len(P) 
+		s0 = minAgentVal - 0 if len(P) == 0 else self.resources[res1].get_utilization(P[0])
+		s1 = float("inf") if len(P) == 0 else self.resources[res1].remaining / len(P) 
 		#denominator for s2
 		s2_denom = 0
 		for j in P:
-			cur = 1.0 / j.demand_vec[0]
+			cur = 1.0 / j.demand_vec[res1]
 			s2_denom += cur
-		s2 = float("inf") if len(P) == 0 else self.resources[1].remaining / s2_denom	
+		s2 = float("inf") if len(P) == 0 else self.resources[res2].remaining / s2_denom	
 		#print(s0,s1,s2)
 		s = min(s0,s1,s2)
 		for agent in P:
 			#increase agents share by some rate
-			self.resources[0].utilize(agent, s)
-			self.resources[1].utilize(agent, s/agent.get_demand(0))
+			self.resources[res1].utilize(agent, s)
+			self.resources[res2].utilize(agent, s/agent.get_demand(0))
 		return self.agents
 
 	def process(self):
-		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
-			self.step2()
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0:
+			if len(self.g1) > len(self.g2):
+				self.step2(0,1)
+			else:
+				self.step2(1,0)
 
 
 class BAL(Algorithm):
-	def step2(self):
+	def step2(self, res1, res2):
 		#thıs needs to be outsıde of the loop 
 		#get s1,s2 calcStep is on page 13
-		s1,s2 = self.calcStep()
+		s1,s2 = self.calcStep(res1, res2)
 		#add things to every agent in p1
 		for agent in self.p1:
 			#scalar we add to allocation and subtract from remaining resources
-			val = s1/agent.demand_vec[1]
-			self.resources[1].utilize(agent, val*agent.get_demand(1))
-			self.resources[0].utilize(agent, val*agent.get_demand(0))
+			val = s1/agent.demand_vec[res2]
+			self.resources[res2].utilize(agent, val*agent.get_demand(res2))
+			self.resources[res1].utilize(agent, val*agent.get_demand(res1))
 		#add things to every agent in p2
 		for agent in self.p2:
 			#scalar we add to allocation and subtract from remaining resources
-			val = s2/agent.demand_vec[0]
-			self.resources[1].utilize(agent, val*agent.get_demand(1))
-			self.resources[0].utilize(agent, val*agent.get_demand(0))
+			val = s2/agent.demand_vec[res1]
+			self.resources[res2].utilize(agent, val*agent.get_demand(res2))
+			self.resources[res1].utilize(agent, val*agent.get_demand(res1))
 		
-	def calcStep(self):
+	def calcStep(self, res1, res2):
 		s1,s2 = 0,0
+		r1, r2 = self.resources[0].remaining, self.resources[1].remaining
 		#calculate s1 and s2
 		p1_sub = [a for a in self.agents if a not in self.p1]
 		minAgentVal1 = float("inf") #smallest agent outside of P1
 		for agent in p1_sub:
-			if self.resources[1].get_utilization(agent) < minAgentVal1:
-				minAgentVal1 = self.resources[1].get_utilization(agent)
+			if self.resources[res2].get_utilization(agent) < minAgentVal1:
+				minAgentVal1 = self.resources[res2].get_utilization(agent)
 
 		minAgentVal2 = float("inf") #smallest agent outside of P1
 		for agent in self.p1:
-			if self.resources[1].get_utilization(agent) < minAgentVal2:
-				minAgentVal2 = self.resources[1].get_utilization(agent)
+			if self.resources[res2].get_utilization(agent) < minAgentVal2:
+				minAgentVal2 = self.resources[res2].get_utilization(agent)
 		s1a = minAgentVal1 - minAgentVal2 
-		s1b = self.resources[1].remaining / (len(self.p1) + (self.d1*(self.r2/self.r1)))
+		s1b = self.resources[res2].remaining / (len(self.p1) + (self.d1*(r2/r1)))
 		
 		s1 = min(s1a,s1b)
 		
@@ -200,21 +204,21 @@ class BAL(Algorithm):
 		p2_sub = [a for a in self.agents if a not in self.p2]
 		minAgentVal1 = float("inf") #smallest agent outside of P1
 		for agent in p2_sub:
-			if self.resources[0].get_utilization(agent) < minAgentVal1:
-				minAgentVal1 = self.resources[0].get_utilization(agent)
+			if self.resources[res1].get_utilization(agent) < minAgentVal1:
+				minAgentVal1 = self.resources[res1].get_utilization(agent)
 
 		minAgentVal2 = float("inf") #smallest agent outside of P1
 		for agent in self.p2:
-			if self.resources[0].get_utilization(agent) < minAgentVal2:
-				minAgentVal2 = self.resources[0].get_utilization(agent)
+			if self.resources[res1].get_utilization(agent) < minAgentVal2:
+				minAgentVal2 = self.resources[res1].get_utilization(agent)
 		s2a = minAgentVal1 - minAgentVal2
 		
-		s2b = self.resources[0].remaining / (len(self.p2) + (self.d2*(self.r1/self.r2)))
+		s2b = self.resources[res1].remaining / (len(self.p2) + (self.d2*(r1/r2)))
 
 		s2 = min(s2a,s2b)
 		#adjusts s1 and s2
-		if (s1*self.d1)/(s2*self.d2) <= self.r1/self.r2:
-			s2 = s1 * (self.d1/self.d2) * (self.r2/self.r1)
+		if (s1*self.d1)/(s2*self.d2) <= r1/r2:
+			s2 = s1 * (self.d1/self.d2) * (r2/r1)
 		else:
 			s1 = s2 * (self.d2/self.d1) * (self.r1/self.r2)
 
@@ -222,7 +226,10 @@ class BAL(Algorithm):
 	
 	def process(self):
 		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0:
-			self.step2()
+			if len(self.g1) > len(self.g2):
+				self.step2(0,1)
+			else:
+				self.step2(1,0)
 	
 class BALStar(BAL):
 	"""Same as BAL, but with just a single change in values"""
@@ -341,8 +348,12 @@ def randomize():
 	alg = UNB(2,no_of_agents)
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
+	a = 0.2
 	for i in range(no_of_agents):
-		alg.add_agent(Agent(f"{i}", rd.uniform(0.001,1.0), rd.uniform(0.001,1.0)))
+		if i < a* no_of_agents:
+			alg.add_agent(Agent(f"{i}",1.0, rd.uniform(0.01, 1)))
+		else:
+			alg.add_agent(Agent(f"{i}", rd.uniform(0.01, 1), 1.0))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
 	alg.process()
@@ -350,14 +361,17 @@ def randomize():
 	print("alpha is",alpha,"utility is",util)
 	return alpha, util
 
+bal_random_viz()
 
+"""
 x,y = [],[]
-for i in range(1000):
+for i in range(100):
 	a, u = randomize()
 	x.append(a)
 	y.append(u)
 
 pyplot.scatter(x,y)
 pyplot.show()
+"""
 
 #bal_random_viz()
