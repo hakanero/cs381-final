@@ -140,14 +140,14 @@ class UNB(Algorithm):
 			if self.resources[0].get_utilization(agent) < minAgentVal:
 				minAgentVal = self.resources[0].get_utilization(agent)
 		
-		s0 = minAgentVal - self.resources[0].get_utilization(P[0])
-		s1 = self.resources[0].remaining / len(P) 
+		s0 = minAgentVal - 0 if len(P) == 0 else self.resources[0].get_utilization(P[0])
+		s1 = float("inf") if len(P) == 0 else self.resources[0].remaining / len(P) 
 		#denominator for s2
 		s2_denom = 0
 		for j in P:
 			cur = 1.0 / j.demand_vec[0]
 			s2_denom += cur
-		s2 = self.resources[1].remaining / s2_denom	
+		s2 = float("inf") if len(P) == 0 else self.resources[1].remaining / s2_denom	
 		#print(s0,s1,s2)
 		s = min(s0,s1,s2)
 		for agent in P:
@@ -305,15 +305,14 @@ def bal_star_test():
 	pyplot.show()
 
 def randomize_unb():
-	no_of_agents = 6
+	no_of_agents = 1000
 	alg = UNB(2,no_of_agents)
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	for i in range(no_of_agents):
-		alg.add_agent(Agent(f"{i}", rd.randint(1,100)*1.0/100, rd.randint(1,100)*1.0/100))
+		alg.add_agent(Agent(f"{i}", rd.uniform(0.1,1), rd.uniform(0.1,1)))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
-	
 	alg.process()
 	util = alg.calculate_utility()
 	print("alpha is",alpha,"utility is",util)
@@ -327,7 +326,7 @@ Who got the least utility from the resource -> social utility
 """
 
 x,y = [],[]
-for i in range(10):
+for i in range(1000):
 	a, u = randomize_unb()
 	x.append(a)
 	y.append(u)
