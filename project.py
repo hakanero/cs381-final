@@ -1,4 +1,5 @@
 from matplotlib import pyplot
+import random as rd
 
 class Agent:
 	'''Agent class, represents each one of the players that want a certain amount of each resource'''
@@ -47,7 +48,7 @@ class Resource:
 		labels = [f"Agent {u}" for u in self.utilizers]
 		amounts = [round(self.utilizers[u]*100) for u in self.utilizers]
 		labels.append("Not Utilized")
-		print(self.remaining)
+		#print(self.remaining)
 		amounts.append(round((self.remaining)*100))
 		pyplot.figure(f"{self.name} {fig_name}")
 		pyplot.pie(amounts, labels=labels)
@@ -60,14 +61,24 @@ class Resource:
 
 class Algorithm:
 	'''Algorithm class, represents the base of a resource allocation algorithm'''
-	nor : int #number_of_resources
-	n : int #number_of_agents
-	resources = []
-	agents = []
-
 	def __init__(self, number_of_resources = 2, number_of_agents = 3) -> None:
 		self.nor = number_of_resources
 		self.n = number_of_agents
+		self.resources = []
+		self.agents = []
+	
+	def calc_values(self):
+		self.g1 = [a for a in self.agents if a.demand_vec[0] == 1.0]
+		self.g2 = [a for a in self.agents if a.demand_vec[0] < 1.0]
+		self.p1 = self.get_P(self.g1, 1)
+		self.p2 = self.get_P(self.g2, 0)
+		self.r1 = 1.0 - len(self.g1)/self.n - sum([a.demand_vec[0] for a in self.g2])/self.n
+		self.r2 = 1.0 - len(self.g2)/self.n - sum([a.demand_vec[1] for a in self.g1])/self.n
+		self.d1,self.d2 = 0,0
+		for agent in self.p1:
+			self.d1 += (1.0/agent.demand_vec[1])
+		for agent in self.p2:
+			self.d2 += (1.0/agent.demand_vec[0])
 
 	def add_agent(self, agent):
 		agent.normalize()
@@ -75,10 +86,24 @@ class Algorithm:
 	
 	def share_function(self):
 		'''the function that shares resources'''
+		self.calc_values()
 		#initially, give everyone 1/n of their demand
 		for a in self.agents:
 			for j,i in enumerate(a.demand_vec):
 				self.resources[j].utilize(a, i/self.n)
+	
+	def calculate_alpha(self):
+		l = min(len(self.g1), len(self.g2))
+		return l*1.0/self.n
+	
+	def calculate_utility(self):
+		#Allocation of that resource / demand of that resource
+		res = 0
+		cur_min = float("inf")
+		for a in self.agents:
+			if a.get_demand(res) < cur_min:
+				cur_min = a.get_demand(res)
+		return self.resources[res].get_utilization(a)*1.0 / cur_min
 
 	def get_P(self, g, r):
 		P = []
@@ -105,10 +130,8 @@ class UNB(Algorithm):
 	'''UNB algorithm stands for UNBalanced. When groups are unbalanced, only increase the share of the agent with lowest share in the smallest group.'''
 	def step2(self):
 		'''when group 1 is bigger we look at group 2 and give resource 1 to the smallest agents of group 2'''
-		g1  = [a for a in self.agents if a.demand_vec[0] == 1.0]
-		g2  = [a for a in self.agents if a.demand_vec[0] < 1.0]
 		#need to find new smallest agent each iteration
-		P = self.get_P(g2, 0)
+		P = self.get_P(self.g2, 0)
 		
 		#this one we find the smallest agent of resource 1 thats not in P (basically the second lowest frac) minus the smallest frac in P
 		n_subP = [a for a in self.agents if a not in P]
@@ -126,7 +149,7 @@ class UNB(Algorithm):
 			cur = 1.0 / j.demand_vec[0]
 			s2_denom += cur
 		s2 = self.resources[1].remaining / s2_denom	
-		print(s0,s1,s2)
+		#print(s0,s1,s2)
 		s = min(s0,s1,s2)
 		for agent in P:
 			#increase agents share by some rate
@@ -140,24 +163,6 @@ class UNB(Algorithm):
 
 
 class BAL(Algorithm):
-	def share_function(self):
-		super().share_function()
-		self.calc_values()
-
-	def calc_values(self):
-		self.g1 = [a for a in self.agents if a.demand_vec[0] == 1.0]
-		self.g2 = [a for a in self.agents if a.demand_vec[0] < 1.0]
-		self.p1 = self.get_P(self.g1, 1)
-		self.p2 = self.get_P(self.g2, 0)
-		self.r1 = 1.0 - len(self.g1)/self.n - sum([a.demand_vec[0] for a in self.g2])/self.n
-		self.r2 = 1.0 - len(self.g2)/self.n - sum([a.demand_vec[1] for a in self.g1])/self.n
-		self.d1,self.d2 = 0,0
-		for agent in self.p1:
-			self.d1 += (1.0/agent.demand_vec[1])
-		for agent in self.p2:
-			self.d2 += (1.0/agent.demand_vec[0])
-
-
 	def step2(self):
 		#thıs needs to be outsıde of the loop 
 		#get s1,s2 calcStep is on page 13
@@ -222,6 +227,7 @@ class BAL(Algorithm):
 			self.step2()
 	
 class BALStar(BAL):
+	"""Same as BAL, but with just a single change in values"""
 	def calc_values(self):
 		super().calc_values()
 		self.r1 = self.r1 + self.d1/self.n
@@ -299,6 +305,20 @@ def bal_star_test():
 	alg.show_resources("after BAL*")
 	pyplot.show()
 
+def randomize_unb():
+	no_of_agents = 6
+	alg = UNB(2,no_of_agents)
+	alg.resources.append(Resource("CPU"))
+	alg.resources.append(Resource("Memory"))
+	for i in range(no_of_agents):
+		alg.add_agent(Agent(f"{i}", rd.random(), rd.random()))
+	alg.share_function()
+	alpha = alg.calculate_alpha()
+	print("alpha is",alpha)
+	alg.process()
+	util = alg.calculate_utility()
+	return alpha, util
+
 """
 We are just observing lol
 Who performs better under what values
@@ -306,5 +326,11 @@ How well the algorithms perform on making the smallest agent happy
 Who got the least utility from the resource -> social utility
 """
 
+x,y = [],[]
+for i in range(10):
+	a, u = randomize_unb()
+	x.append(a)
+	y.append(u)
 
-bal_star_test()
+pyplot.scatter(x,y)
+pyplot.show()
