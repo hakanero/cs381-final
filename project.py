@@ -140,84 +140,80 @@ class UNB(Algorithm):
 
 
 class BAL(Algorithm):
+	def share_function(self):
+		super().share_function()
+		self.calc_values()
+
+	def calc_values(self):
+		self.g1 = [a for a in self.agents if a.demand_vec[0] == 1.0]
+		self.g2 = [a for a in self.agents if a.demand_vec[0] < 1.0]
+		self.p1 = self.get_P(self.g1, 1)
+		self.p2 = self.get_P(self.g2, 0)
+		self.r1 = 1.0 - len(self.g1)/self.n - sum([a.demand_vec[0] for a in self.g2])/self.n
+		self.r2 = 1.0 - len(self.g2)/self.n - sum([a.demand_vec[1] for a in self.g1])/self.n
+		self.d1,self.d2 = 0,0
+		for agent in self.p1:
+			self.d1 += (1.0/agent.demand_vec[1])
+		for agent in self.p2:
+			self.d2 += (1.0/agent.demand_vec[0])
+
+
 	def step2(self):
 		#thıs needs to be outsıde of the loop 
-		g1  = [a for a in self.agents if a.demand_vec[0] == 1.0]
-		g2  = [a for a in self.agents if a.demand_vec[0] < 1.0]
-		#smallest agents of resource 2 in group 1
-		p1 = self.get_P(g1, 1)
-		#smallest agents of resource 1 in group 2
-		p2 = self.get_P(g2, 0)
 		#get s1,s2 calcStep is on page 13
-		s1,s2 = self.calcStep(p1,p2,g1,g2)
-
+		s1,s2 = self.calcStep()
 		#add things to every agent in p1
-		for agent in p1:
+		for agent in self.p1:
 			#scalar we add to allocation and subtract from remaining resources
 			val = s1/agent.demand_vec[1]
 			self.resources[1].utilize(agent, val*agent.get_demand(1))
 			self.resources[0].utilize(agent, val*agent.get_demand(0))
 		#add things to every agent in p2
-		for agent in p2:
+		for agent in self.p2:
 			#scalar we add to allocation and subtract from remaining resources
 			val = s2/agent.demand_vec[0]
 			self.resources[1].utilize(agent, val*agent.get_demand(1))
 			self.resources[0].utilize(agent, val*agent.get_demand(0))
 		
-	def calcStep(self,p1,p2,g1,g2):
+	def calcStep(self):
 		s1,s2 = 0,0
-		d1,d2 = 0,0
-		r1 = 1.0 - len(g1)/self.n - sum([a.demand_vec[0] for a in g2])/self.n
-		r2 = 1.0 - len(g2)/self.n - sum([a.demand_vec[1] for a in g1])/self.n
 		#calculate s1 and s2
-		
-		p1_sub = [a for a in self.agents if a not in p1]
-
+		p1_sub = [a for a in self.agents if a not in self.p1]
 		minAgentVal1 = float("inf") #smallest agent outside of P1
 		for agent in p1_sub:
 			if self.resources[1].get_utilization(agent) < minAgentVal1:
 				minAgentVal1 = self.resources[1].get_utilization(agent)
 
 		minAgentVal2 = float("inf") #smallest agent outside of P1
-		for agent in p1:
+		for agent in self.p1:
 			if self.resources[1].get_utilization(agent) < minAgentVal2:
 				minAgentVal2 = self.resources[1].get_utilization(agent)
-
 		s1a = minAgentVal1 - minAgentVal2 
+		s1b = self.resources[1].remaining / (len(self.p1) + (self.d1*(self.r2/self.r1)))
 		
-		for agent in p1:
-			d1 += (1.0/agent.demand_vec[1])
-		
-		s1b = self.resources[1].remaining / (len(p1) + (d1*(r2/r1)))
-		print(s1b,s1a)
 		s1 = min(s1a,s1b)
 		
 		#calculate s2
-		p2_sub = [a for a in self.agents if a not in p2]
-
+		p2_sub = [a for a in self.agents if a not in self.p2]
 		minAgentVal1 = float("inf") #smallest agent outside of P1
 		for agent in p2_sub:
 			if self.resources[0].get_utilization(agent) < minAgentVal1:
 				minAgentVal1 = self.resources[0].get_utilization(agent)
 
 		minAgentVal2 = float("inf") #smallest agent outside of P1
-		for agent in p2:
+		for agent in self.p2:
 			if self.resources[0].get_utilization(agent) < minAgentVal2:
 				minAgentVal2 = self.resources[0].get_utilization(agent)
-
 		s2a = minAgentVal1 - minAgentVal2
 		
-		for agent in p2:
-			d2 += (1.0/agent.demand_vec[0])
-		
-		s2b = self.resources[0].remaining / (len(p2) + (d2*(r1/r2)))
+		s2b = self.resources[0].remaining / (len(self.p2) + (self.d2*(self.r1/self.r2)))
 
 		s2 = min(s2a,s2b)
 		#adjusts s1 and s2
-		if (s1*d1)/(s2*d2) <= r1/r2:
-			s2 = s1 * (d1/d2) * (r2/r1)
+		if (s1*self.d1)/(s2*self.d2) <= self.r1/self.r2:
+			s2 = s1 * (self.d1/self.d2) * (self.r2/self.r1)
 		else:
-			s1 = s2 * (d2/d1) * (r1/r2)
+			s1 = s2 * (self.d2/self.d1) * (self.r1/self.r2)
 
 		return (s1,s2)
 	
@@ -226,78 +222,10 @@ class BAL(Algorithm):
 			self.step2()
 	
 class BALStar(BAL):
-
-	def step2(self):
-		#smallest agents of resource 2 in group 1
-		p1 = self.groups[0].smallest_agents_of_resource(1)
-		#smallest agents of resource 1 in group 2
-		p2 = self.groups[1].smallest_agents_of_resource(0)
-		#get s1,s2 calcStep is on page 13
-		s1,s2 = self.calcStep()
-
-		#add things to every agent in p1
-		for agent in p1:
-			#scalar we add to allocation and subtract from remaining resources
-			val = s1/agent.demand_vec[1]
-			self.resources[1].utilize(agent, val*agent.get_demand(1))
-			self.resources[0].utilize(agent, val*agent.get_demand(0))
-		#add things to every agent in p2
-		for agent in p2:
-			#scalar we add to allocation and subtract from remaining resources
-			val = s2/agent.demand_vec[0]
-			self.resources[1].utilize(agent, val*agent.get_demand(1))
-			self.resources[0].utilize(agent, val*agent.get_demand(0))
-		
-	def calcStep(self,p1,p2):
-		s1,s2 = 0,0
-		d1,d2 = 0,0
-		r1,r2 = self.resources[0].remaining + (1/len(self.agents)*p1[0].get_demand(0)), self.resources[1].remaining + (1/len(self.agents)*p2[0].get_demand(1))
-		#calculate s1 and s2
-		
-		p1_sub = [a for a in self.agents if a not in p1]
-
-		minAgentVal = float("inf") #smallest agent outside of P1
-		for agent in p1_sub:
-			if self.resources[1].get_utilization(agent) < minAgentVal:
-				minAgentVal = self.resources[1].get_utilization(agent)
-
-		s1a = minAgentVal - p1[0].get_demand(1) 
-		
-		for agent in p1:
-			d1 += (1/agent.demand_vec[1])
-		
-		s1b = self.resources[1] / (len(p1) + (d1*(r2/r1)))
-
-		s1 = min(s1a,s1b)
-		
-		#calculate s2
-		p2_sub = [a for a in self.agents if a not in p2]
-
-		minAgentVal = float("inf") #smallest agent outside of P1
-		for agent in p2_sub:
-			if self.resources[1].get_utilization(agent) < minAgentVal:
-				minAgentVal = self.resources[0].get_utilization(agent)
-
-		s2a = minAgentVal - p2[0].get_demand(0) 
-		
-		for agent in p2:
-			d2 += (1/agent.demand_vec[0])
-		
-		s2b = self.resources[0] / (len(p2) + (d2*(r1/r2)))
-
-		s2 = min(s2a,s2b)
-
-		#adjusts s1 and s2
-		if (s1*d1)/(s2*d2) <= r1/r2:
-			s2 = s1 * (d1/d2) * (r2/r1)
-		else:
-			s1 = s2 * (d2/d1) * (r1/r2)
-
-		return (s1,s2)
-	
-	def process(self):
-		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0.2:
-			self.step2()
+	def calc_values(self):
+		super().calc_values()
+		self.r1 = self.r1 + self.d1/self.n
+		self.r2 = self.r2 + self.d2/self.n
 
 #TESTS BELOW
 
@@ -312,14 +240,12 @@ def alg_test():
 	alg.show_resources()
 
 def unb_test():
-	alg = UNB(2,5)
+	alg = UNB(2,3)
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	alg.add_agent(Agent("A", 0.2,0.3))
 	alg.add_agent(Agent("B", 0.4,0.2))
 	alg.add_agent(Agent("C", 0.4,0.1))
-	alg.add_agent(Agent("D", 0.1,0.1))
-	alg.add_agent(Agent("E", 1.0,1.0))
 	alg.share_function()
 	alg.show_resources("initial")
 	for r in alg.resources:
@@ -333,14 +259,13 @@ def unb_test():
 	pyplot.show()
 
 def bal_test():
-	alg = BAL(2,5)
+	alg = BAL(2,4)
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	alg.add_agent(Agent("A", 0.2,0.3))
 	alg.add_agent(Agent("B", 0.4,0.1))
 	alg.add_agent(Agent("C", 0.4,0.2))
-	alg.add_agent(Agent("D", 0.1,0.1))
-	alg.add_agent(Agent("E", 1.0,1.0))
+	alg.add_agent(Agent("D", 0.4,0.1))
 	alg.share_function()
 	alg.show_resources("initial")
 	for r in alg.resources:
@@ -371,7 +296,7 @@ def bal_star_test():
 	for r in alg.resources:
 		for i in r.utilizers:
 			print("resource",r,"agent",i,r.utilizers[i])
-	alg.show_resources("after UNB")
+	alg.show_resources("after BAL*")
 	pyplot.show()
 
 """
@@ -382,4 +307,4 @@ Who got the least utility from the resource -> social utility
 """
 
 
-bal_test()
+bal_star_test()
