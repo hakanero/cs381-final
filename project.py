@@ -249,7 +249,7 @@ def unb_test():
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	alg.add_agent(Agent("A", 0.2,0.3))
-	alg.add_agent(Agent("B", 0.4,0.2))
+	alg.add_agent(Agent("B", 0.5,0.2))
 	alg.add_agent(Agent("C", 0.4,0.1))
 	alg.share_function()
 	alg.show_resources("initial")
@@ -318,6 +318,32 @@ def randomize():
 	print("alpha is",alpha,"utility is",util)
 	return alpha, util
 
+def unb_random_viz():
+	no_of_agents = 10
+	alg = UNB(2,no_of_agents)
+	alg.resources.append(Resource("CPU"))
+	alg.resources.append(Resource("Memory"))
+	for i in range(no_of_agents):
+		alg.add_agent(Agent(f"{i}", rd.uniform(0.001, 1.0), rd.uniform(0.4,0.9)))
+	alg.share_function()
+	alg.show_resources("initial")
+	alg.process()
+	alg.show_resources("after UNB")
+	pyplot.show()
+
+def bal_random_viz():
+	no_of_agents = 10
+	alg = BAL(2,no_of_agents)
+	alg.resources.append(Resource("CPU"))
+	alg.resources.append(Resource("Memory"))
+	for i in range(no_of_agents):
+		alg.add_agent(Agent(f"{i}", rd.uniform(0.001, 0.9), rd.uniform(0.4,0.9)))
+	alg.share_function()
+	alg.show_resources("initial")
+	alg.process()
+	alg.show_resources("after UNB")
+	pyplot.show()
+
 """
 We are just observing lol
 Who performs better under what values
@@ -325,6 +351,7 @@ How well the algorithms perform on making the smallest agent happy
 Who got the least utility from the resource -> social utility
 """
 
+"""
 x,y = [],[]
 for i in range(1000):
 	a, u = randomize()
@@ -333,3 +360,5 @@ for i in range(1000):
 
 pyplot.scatter(x,y)
 pyplot.show()
+"""
+bal_random_viz()
