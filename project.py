@@ -304,13 +304,13 @@ def bal_star_test():
 	alg.show_resources("after BAL*")
 	pyplot.show()
 
-def randomize_unb():
+def randomize():
 	no_of_agents = 1000
 	alg = UNB(2,no_of_agents)
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	for i in range(no_of_agents):
-		alg.add_agent(Agent(f"{i}", rd.uniform(0.1,1), rd.uniform(0.1,1)))
+		alg.add_agent(Agent(f"{i}", rd.uniform(0.3,1), rd.uniform(0.001,0.9)))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
 	alg.process()
@@ -327,7 +327,7 @@ Who got the least utility from the resource -> social utility
 
 x,y = [],[]
 for i in range(1000):
-	a, u = randomize_unb()
+	a, u = randomize()
 	x.append(a)
 	y.append(u)
 
