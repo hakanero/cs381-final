@@ -101,9 +101,9 @@ class Algorithm:
 		res = 0
 		cur_min = float("inf")
 		for a in self.agents:
-			if a.get_demand(res) < cur_min:
-				cur_min = a.get_demand(res)
-		return self.resources[res].get_utilization(a)*1.0 / cur_min
+			if self.resources[res].get_utilization(a) < cur_min:
+				cur_min = self.resources[res].get_utilization(a)
+		return cur_min / a.get_demand(res)
 
 	def get_P(self, g, r):
 		P = []
@@ -305,12 +305,12 @@ def bal_star_test():
 	pyplot.show()
 
 def randomize():
-	no_of_agents = 1000
+	no_of_agents = 100
 	alg = UNB(2,no_of_agents)
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	for i in range(no_of_agents):
-		alg.add_agent(Agent(f"{i}", rd.uniform(0.3,1), rd.uniform(0.001,0.9)))
+		alg.add_agent(Agent(f"{i}", rd.uniform(0.001,1.0), rd.uniform(0.001,1.0)))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
 	alg.process()
@@ -351,14 +351,14 @@ How well the algorithms perform on making the smallest agent happy
 Who got the least utility from the resource -> social utility
 """
 
-"""
+
 x,y = [],[]
-for i in range(1000):
+for i in range(100):
 	a, u = randomize()
 	x.append(a)
 	y.append(u)
 
 pyplot.scatter(x,y)
 pyplot.show()
-"""
-bal_random_viz()
+
+#bal_random_viz()
