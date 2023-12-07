@@ -272,9 +272,8 @@ def bal_test():
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	alg.add_agent(Agent("A", 0.2,0.3))
-	alg.add_agent(Agent("B", 0.4,0.1))
-	alg.add_agent(Agent("C", 0.4,0.2))
-	alg.add_agent(Agent("D", 0.4,0.1))
+	alg.add_agent(Agent("B", 0.5,0.2))
+	alg.add_agent(Agent("C", 0.4,0.1))
 	alg.share_function()
 	alg.show_resources("initial")
 	for r in alg.resources:
@@ -362,16 +361,18 @@ def randomize(no_of_agents, alpha, alg):
 	#print("alpha is",alpha,"utility is",util)
 	return alpha, util
 
-
-noa = 1000
+"""
+noa = 100
 x,y = [],[]
 for i in range(1000):
-	a, u = randomize(noa, ((i%noa)+1)/noa, BALStar(2,noa))
+	a, u = randomize(noa, ((i%noa)+1)/noa, UNB(2,noa))
 	x.append(a)
 	y.append(u)
 
 pyplot.scatter(x,y)
 pyplot.show()
-
+"""
 
 #bal_random_viz()
+
+bal_test()
