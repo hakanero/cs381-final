@@ -74,11 +74,8 @@ class Algorithm:
 		self.p2 = self.get_P(self.g2, 0)
 		self.r1 = 1.0 - len(self.g1)/self.n - sum([a.demand_vec[0] for a in self.g2])/self.n
 		self.r2 = 1.0 - len(self.g2)/self.n - sum([a.demand_vec[1] for a in self.g1])/self.n
-		self.d1,self.d2 = 0,0
-		for agent in self.p1:
-			self.d1 += (1.0/agent.demand_vec[1])
-		for agent in self.p2:
-			self.d2 += (1.0/agent.demand_vec[0])
+		self.d1 = sum(1.0/agent.demand_vec[1] for agent in self.p1)
+		self.d2 = sum(1.0/agent.demand_vec[0] for agent in self.p2)
 
 	def add_agent(self, agent):
 		agent.normalize()
@@ -199,7 +196,6 @@ class BAL(Algorithm):
 		s1b = self.resources[res2].remaining / (len(self.p1) + (self.d1*(r2/r1)))
 		
 		s1 = min(s1a,s1b)
-		
 		#calculate s2
 		p2_sub = [a for a in self.agents if a not in self.p2]
 		minAgentVal1 = float("inf") #smallest agent outside of P1
@@ -217,7 +213,7 @@ class BAL(Algorithm):
 
 		s2 = min(s2a,s2b)
 		#adjusts s1 and s2
-		if r2*s2 > 0 and (s1*self.d1)/(s2*self.d2) <= r1/r2:
+		if (s1*self.d1)/(s2*self.d2) <= r1/r2:
 			s2 = s1 * (self.d1/self.d2) * (r2/r1)
 		else:
 			s1 = s2 * (self.d2/self.d1) * (self.r1/self.r2)
@@ -225,11 +221,13 @@ class BAL(Algorithm):
 		return (s1,s2)
 	
 	def process(self):
-		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0:
+		count = 0
+		while self.resources[0].remaining > 0 and self.resources[1].remaining > 0 and count < 25:
 			if len(self.g1) > len(self.g2):
 				self.step2(0,1)
 			else:
 				self.step2(1,0)
+			count += 1
 	
 class BALStar(BAL):
 	"""Same as BAL, but with just a single change in values"""
@@ -347,7 +345,7 @@ def randomize(no_of_agents, alpha, alg):
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
 	for k in range(no_of_agents):
-		v1 = rd.uniform(0.001, 1.0)
+		v1 = rd.uniform(0.2, 0.8)
 		v2 = min(1-v1, v1)
 		v1 = 1-v2
 		if k < alpha*no_of_agents:
@@ -356,20 +354,24 @@ def randomize(no_of_agents, alpha, alg):
 			alg.add_agent(Agent(f"{k}", v1, v2))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
-	alg.process()
+	try:
+		alg.process()
+	except Exception:
+		pass
 	util = alg.calculate_utility(0)
 	#print("alpha is",alpha,"utility is",util)
 	return alpha, util
 
 
-noa = 10
+noa = 1000
 x,y = [],[]
-for i in range(100):
-	a, u = randomize(noa, ((i%noa)+1)/noa, BAL(2,noa))
+for i in range(1000):
+	a, u = randomize(noa, ((i%noa)+1)/noa, BALStar(2,noa))
 	x.append(a)
 	y.append(u)
 
 pyplot.scatter(x,y)
 pyplot.show()
+
 
 #bal_random_viz()
