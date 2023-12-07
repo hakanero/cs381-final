@@ -217,7 +217,7 @@ class BAL(Algorithm):
 
 		s2 = min(s2a,s2b)
 		#adjusts s1 and s2
-		if (s1*self.d1)/(s2*self.d2) <= r1/r2:
+		if r2*s2 > 0 and (s1*self.d1)/(s2*self.d2) <= r1/r2:
 			s2 = s1 * (self.d1/self.d2) * (r2/r1)
 		else:
 			s1 = s2 * (self.d2/self.d1) * (self.r1/self.r2)
@@ -343,35 +343,33 @@ How well the algorithms perform on making the smallest agent happy
 Who got the least utility from the resource -> social utility
 """
 
-def randomize():
-	no_of_agents = 20
-	alg = UNB(2,no_of_agents)
+def randomize(no_of_agents, alpha, alg):
 	alg.resources.append(Resource("CPU"))
 	alg.resources.append(Resource("Memory"))
-	a = 0.2
-	for i in range(no_of_agents):
-		if i < a* no_of_agents:
-			alg.add_agent(Agent(f"{i}",1.0, rd.uniform(0.01, 1)))
+	for k in range(no_of_agents):
+		v1 = rd.uniform(0.001, 1.0)
+		v2 = min(1-v1, v1)
+		v1 = 1-v2
+		if k < alpha*no_of_agents:
+			alg.add_agent(Agent(f"{k}", v2, v1))
 		else:
-			alg.add_agent(Agent(f"{i}", rd.uniform(0.01, 1), 1.0))
+			alg.add_agent(Agent(f"{k}", v1, v2))
 	alg.share_function()
 	alpha = alg.calculate_alpha()
 	alg.process()
 	util = alg.calculate_utility(0)
-	print("alpha is",alpha,"utility is",util)
+	#print("alpha is",alpha,"utility is",util)
 	return alpha, util
 
-bal_random_viz()
 
-"""
+noa = 10
 x,y = [],[]
 for i in range(100):
-	a, u = randomize()
+	a, u = randomize(noa, ((i%noa)+1)/noa, BAL(2,noa))
 	x.append(a)
 	y.append(u)
 
 pyplot.scatter(x,y)
 pyplot.show()
-"""
 
 #bal_random_viz()
